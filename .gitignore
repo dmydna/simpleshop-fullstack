@@ -1,0 +1,10 @@
+# Ignorar todo el contenido de las carpetas
+.backend/*
+.frontend/*
+
+# Excepciones: NO ignorar los archivos .gitkeep
+!.backend/.gitkeep
+!.frontend/.gitkeep
+
+### VS Code ###
+.vscode/
