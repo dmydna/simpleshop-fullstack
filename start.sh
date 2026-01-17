@@ -1,188 +1,141 @@
 #!/bin/bash
-#set -e
-source .env
+#source .env
+
+# --- CONFIGURACIÓN DE COLORES ---
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Cargamos variables de entorno si existe el archivo
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+else
+    echo -e "${RED}❌ Error: Archivo .env no encontrado.${NC}"
+    exit 1
+fi
+
+# Variables de contenedores (Mejorado: usa prefijo de proyecto si existe)
+COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-"techlab"}
+DB_CONTAINER="${COMPOSE_PROJECT_NAME}-db-1"
+FILE_DEV=".config/docker-compose-dev.yml"
+FILE_PROD="docker-compose.yml"
+
+# --- FUNCIONES DE APOYO ---
 
 pre_check() {
-    # 1. Validar .env
-    if [ ! -f .env ]; then
-        echo "❌ Error: Archivo .env no encontrado en la raíz."
-        exit 1
-    fi
+    echo -e "${BLUE}🔍 Ejecutando chequeos preventivos...${NC}"
+    
+    # 1. Sincronizar .env a los submodulos
+    for dir in "backend" "frontend" ".config"; do
+        if [ -d "$dir" ]; then
+            cp .env "$dir/.env" 2>/dev/null && echo -e "  ✅ .env sincronizado en $dir"
+        fi
+    done
 
-    # 2. Sincronizar configuraciones
-    echo "📂 Sincronizando configuraciones..."
-    mkdir -p .config # Asegura que la carpeta existe
-    cp -u .env .config/.env 2>/dev/null || cp .env .config/.env
-    cp -u .env backend/.env 2>/dev/null || cp .env backend/.env
-    cp -u .env frontend/.env 2>/dev/null || cp .env frontend/.env
-
-    # 3. Docker Engine check
+    # 2. Docker Engine check
     if ! docker info >/dev/null 2>&1; then
-        echo "🐳 Iniciando motor de Docker..."
+        echo -e "${YELLOW}🐳 Iniciando motor de Docker...${NC}"
         sudo systemctl start docker && sleep 3
     fi
 
-    # 4. Limpieza de choques (MySQL nativo y Puertos)
-    if lsof -Pi :3306 -sTCP:LISTEN -t >/dev/null && systemctl is-active --quiet mysql; then
-        echo "🛑 Deteniendo MySQL local para liberar puerto 3306..."
-        sudo systemctl stop mysql
-    fi
-
-    echo "🔍 Liberando puertos: $PORT_BACKEND, $PORT_DATABASE, $PORT_FRONTEND"
-    for puerto in ${PORT_BACKEND} ${PORT_DATABASE} ${PORT_FRONTEND}; do
+    # 3. Liberar puertos
+    local ports=(${PORT_BACKEND} ${PORT_DATABASE} ${PORT_FRONTEND})
+    for puerto in "${ports[@]}"; do
         pid=$(lsof -t -i:$puerto)
-        [ ! -z "$pid" ] && (kill -9 $pid 2>/dev/null || sudo kill -9 $pid)
+        if [ ! -z "$pid" ]; then
+            echo -e "${YELLOW}⚠️ Liberando puerto $puerto...${NC}"
+            kill -9 $pid 2>/dev/null || sudo kill -9 $pid
+        fi
     done
 }
-# ---------------------------------------
 
-
-
-echo "🚀 Iniciando el sistema TechLab..."
-
-# --- CONFIGURACIÓN ---
-
-DB_CONTAINER="config-db-1"
-FRONT_CONTAINER="config-frontend-1"
-BACK_CONTAINER="config-backend-1"
-DB_PASSWORD=${DB_PASSWORD}
-DEV_MODE=${DEV_MODE}
-REPO_BACKEND="https://github.com/dmydna/simple-shop-api.git"
-REPO_FRONTEND="https://github.com/dmydna/simple-shop.git"
-FILE_DEV=".config/docker-compose-dev.yml"
-FILE_PROD="docker-compose.yml"
-ENV_FILE="--env-file .env"
-
-
-# Función para clonar si no existe
-check_and_clone() {
-    if [ ! -d "$1" ]; then
-        echo "📂 Clonando $1..."
-        git clone "$2" "$1"
-    fi
+print_msg() {
+     echo -e "\n${GREEN}======================================="
+     echo -e "🚀 Sistema TechLab en línea"
+     echo -e "=======================================${NC}"
+     echo -e "🌐 Frontend:   ${BLUE}http://localhost:${PORT_FRONTEND}${NC}"
+     echo -e "⚙️  Backend:    ${BLUE}http://localhost:${PORT_BACKEND}${NC}"
+     echo -e "📊 Database:   ${BLUE}Puerto ${PORT_DATABASE}${NC}"
+     echo -e "---------------------------------------"
+     echo -e "💡 Tips: Usa ${YELLOW}./start.sh --logs-backend${NC} para ver logs."
 }
 
-
-print_help() {
-     echo "✅ Sistema levantado con éxito."
-     echo "---------------------------------------"
-     echo "Frontend: http://localhost:${PORT_FRONTEND}"
-     echo "Backend:  http://localhost:${PORT_BACKEND}"
-     echo "H2 Console: http://localhost:${PORT_BACKEND}/h2-console"
-     echo "---------------------------------------"
-     echo "💡 Usa 'docker compose logs -f' para ver los logs en tiempo real."
-}
-
-# Función para limpiar Docker de raíz
-docker_clean() {
-    echo "🧹 Limpiando Docker (Volúmenes y Huérfanos)..."
-    docker compose -f $FILE_DEV down -v --remove-orphans
-    docker compose -f $FILE_PROD down -v --remove-orphans
+show_help() {
+    echo -e "${BLUE}Modo de uso:${NC} ./start.sh [opción]"
+    echo -e ""
+    echo -e "🚀 ${GREEN}Servicios:${NC}"
+    echo -e "  (sin args)        Levanta todo el sistema (según DEV_MODE)"
+    echo -e "  --run-backend     Levanta solo el backend + dependencias"
+    echo -e "  --run-frontend    Levanta solo el frontend"
+    echo -e ""
+    echo -e "🛠️  ${YELLOW}Mantenimiento:${NC}"
+    echo -e "  --db              Entra a la consola MySQL"
+    echo -e "  --clean-db        Resetea la base de datos (DROP/CREATE)"
+    echo -e "  --update          Actualiza submódulos Git"
+    echo -e "  --refresh-docker  Reconstruye imágenes desde cero"
+    echo -e ""
+    echo -e "🛑 ${RED}Peligro:${NC}"
+    echo -e "  --kill            Detiene y elimina contenedores y volúmenes"
+    echo -e "  --hard-reset      Borra TODO (imágenes, volúmenes, carpetas)"
 }
 
 # --- LÓGICA DE ARGUMENTOS ---
+
 case "$1" in
-    --refresh-docker)
-       # usar si se agrega nuevas librerias en front/backend
-        docker compose up --build
+    --db)
+        echo -e "${BLUE}📂 Accediendo a la base de datos...${NC}"
+        docker exec -it -e MYSQL_PWD="$DB_PASSWORD" "$DB_CONTAINER" mysql -u root -p"$DB_PASSWORD" "$DB_NAME"
         exit 0
         ;;
-    --hard-reset)
-        echo "🔥 DOCKER DESTROY MODE: Borrando todo..."
+    --clean-db)
+        echo -e "${RED}⚠️  Limpiando base de datos $DB_NAME...${NC}"
+        docker exec -it -e MYSQL_PWD="$DB_PASSWORD" "$DB_CONTAINER" mysql -u root -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;"
+        echo -e "${GREEN}✅ Base de datos reseteada.${NC}"
+        exit 0
+        ;;
+    --refresh-docker)
         pre_check
-        docker compose -f $FILE_DEV down -v --rmi all --remove-orphans
+        docker compose -f $FILE_DEV up --build --force-recreate
         exit 0
         ;;
     --kill)
         pre_check
-        docker_clean
+        docker compose -f $FILE_DEV down -v --remove-orphans
+        echo -e "${GREEN}✅ Limpieza completada.${NC}"
         exit 0
-        ;;
-    --db)
-       docker exec -it $DB_CONTAINER bash
-       exit 0
-       ;;
-    --clean-db)
-      echo "⚠️ CLEAN DATABASE: Limpiando Bases de Datos..."
-      docker exec config-db-1 mysql -u root -p "${DB_PASSWORD}" -e "DROP DATABASE nombre_de_tu_bd; CREATE DATABASE nombre_de_tu_bd;"
-      exit 0
-      ;;
-
-    --logs-frontend  | --logs-backend)
-      SERVICE=${1#--logs-}
-      docker compose -f $FILE_DEV logs $SERVICE
-      exit 0
-      ;;
-    --log-frontend)
-      docker logs $FRONT_CONTAINER
-      exit 0
-      ;;
-    --reset)
-        echo "⚠️ RESET: Borrando carpetas y contenedores..."
-        pre_check
-        docker_clean
-        rm -rf backend frontend
         ;;
     --update)
-        echo "🔄 UPDATE: Sincronizando Git..."
-        pre_check
-        for dir in backend frontend; do
-            (cd $dir && git fetch --all && git pull origin main)
-        done
-        ;;
-    --reset-backend | --reset-frontend)
-        SERVICE=${1#--reset-} # Extrae 'api' o 'frontend'
-        echo "♻️ Reiniciando $SERVICE..."
-        docker compose -f $FILE_DEV restart $SERVICE
+        echo -e "${BLUE}🔄 Actualizando submódulos...${NC}"
+        git submodule update --init --recursive --remote
         exit 0
         ;;
-    --help)
-        print_help
+    --help|-h)
+        show_help
         exit 0
         ;;
-    --backend-only)
-        echo "🚀 Iniciando solo BACKEND..."
-        pre_check
-        # Levanta el servicio 'api' y sus dependencias (como la DB) en segundo plano
-        docker compose -f $FILE_DEV up -d backend
-        docker compose -f $FILE_DEV logs -f backend
-        exit 0
-        ;;
-    --frontend-only)
-        echo "💻 Iniciando solo FRONTEND..."
-        pre_check
-        # Levanta solo el servicio 'frontend'
-        docker compose -f $FILE_DEV up -d frontend
-        docker compose -f $FILE_DEV logs -f frontend
-        exit 0
-        ;;
-    --clear-db)
-        echo "🗑️ Borrando bases de datos y volúmenes..."
-        pre_check
-        # down -v borra los volúmenes definidos en el docker-compose
-        docker compose -f $FILE_DEV down -v
-        echo "✅ Base de datos eliminada. Usa el comando de inicio normal para recrearla."
-        exit 0
-        ;;
-    --pre-check)
-        pre_check
-        exit 0
+    *)
+        if [ ! -z "$1" ] && [[ "$1" != --* ]]; then
+             echo -e "${RED}Opción no reconocida: $1${NC}"
+             show_help
+             exit 1
+        fi
         ;;
 esac
 
-
 # --- FLUJO ESTÁNDAR ---
-echo "🚀 Verificando repositorios..."
-check_and_clone "backend" "$REPO_BACKEND"
-check_and_clone "frontend" "$REPO_FRONTEND"
+pre_check
 
-if [[ $DEV_MODE -eq 1 ]]; then
-    echo "🚀 Iniciando Entorno de DESARROLLO desde /dev..."
-    docker compose ${ENV_FILE} -f ${FILE_DEV} up --build
+echo -e "${BLUE}🚀 Verificando submódulos Git...${NC}"
+git submodule update --init --recursive
+
+if [[ "$DEV_MODE" == "1" ]]; then
+    echo -e "${YELLOW}🚧 Iniciando en modo DESARROLLO...${NC}"
+    docker compose -f "$FILE_DEV" up --build -d
 else
-    echo "🏗️ Iniciando Entorno de PRODUCCIÓN..."
-    docker compose up --build
+    echo -e "${GREEN}📦 Iniciando en modo PRODUCCIÓN...${NC}"
+    docker compose -f "$FILE_PROD" up --build -d
 fi
 
-
-print_help
+print_msg
