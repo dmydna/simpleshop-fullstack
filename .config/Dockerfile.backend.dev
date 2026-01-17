@@ -1,14 +1,20 @@
+ARG PORT_BACKEND
+
 # Usamos el JDK completo (no el JRE) porque Maven necesita compilar en caliente
 FROM maven:3.9.6-eclipse-temurin-21
 WORKDIR /app
 
 # 1. Copiamos solo el pom.xml primero para descargar dependencias y ahorrar tiempo
-COPY backend/pom.xml .
-RUN mvn dependency:go-offline
+COPY pom.xml .
 
-# 2. Copiamos el resto del código
-COPY backend/src ./src
+# Descargamos dependencias (esto se cacheará si el pom no cambia)
+RUN mvn dependency:go-offline && \
+    mvn dependency:resolve-plugins
+
+# 2. Copiamos el código fuente
+COPY src ./src
 
 # 3. Exponemos el puerto de la API y el de Debug (opcional)
-EXPOSE 8080
+EXPOSE ${PORT_BACKEND}
 EXPOSE 5005
+# CMD ["mvn", "spring-boot:run", "-o"]

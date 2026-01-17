@@ -1,5 +1,5 @@
-# DEV COMPOSE.
 services:
+  # --------------------------------------
   # BASE DE DATOS
   db:
     image: mysql:${MYSQL_VERSION}
@@ -19,10 +19,11 @@ services:
       retries: 5
       start_period: 30s
 
+  # --------------------------------------
   # BACKEND (Spring Boot)
   backend:
     build: 
-      context: ./backend
+      context: ../backend
       dockerfile: ../.config/Dockerfile.backend.dev
       args:
         PORT_BACKEND: ${PORT_BACKEND} 
@@ -30,6 +31,16 @@ services:
     ports:
       - "${PORT_BACKEND}:8080"
       - "5005:5005"
+
+    # --- SECCIÓN AUTO-RELOAD ---
+    x-develop:
+      watch:
+        - path: ../backend/src
+          action: sync
+          target: /app/src
+        - path: ../backend/pom.xml
+          action: rebuild
+    # --------------------------------------
     depends_on:
       db:
         condition: service_healthy
@@ -40,8 +51,8 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - DB_URL=${DB_URL}
       - DB_DRIVER=${DB_DRIVER} 
-      - CORS_ORIGINS=${CORS_ALLOWED_ORIGINS}
       - APP_BASE_URL=${APP_BASE_URL}
+      - CORS_ORIGINS=${CORS_ALLOWED_ORIGINS}
       - UPLOAD_DIR=/app/uploads
       - SPRING_PROFILES_ACTIVE=dev
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
@@ -53,10 +64,11 @@ services:
       mvn spring-boot:run 
       -Dspring-boot.run.jvmArguments="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005"
 
+  # --------------------------------------
   # FRONTEND (React)
   frontend:
     build: 
-      context: ./frontend
+      context: ../frontend
       dockerfile: ../.config/Dockerfile.frontend.dev
       args:
         PORT_FRONTEND: ${PORT_FRONTEND} 
@@ -73,7 +85,7 @@ services:
       - /app/node_modules       
     command: npm run dev -- --host 0.0.0.0 --port ${PORT_FRONTEND}
 
-# SECCIÓN DE VOLÚMENES GLOBAL (Debe estar al mismo nivel que 'services')
+
 volumes:
   db_data:
   maven_data:
