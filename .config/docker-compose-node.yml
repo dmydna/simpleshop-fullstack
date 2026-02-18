@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  # Servicio de Base de Datos
+  db:
+    image: mongo:latest
+    container_name: mongodb_api
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+  # Servicio de la API
+  app:
+    build: .
+    container_name: node_api
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      # Nota: Usamos 'db' en lugar de 'localhost' para la conexión
+      - MONGO_URI=mongodb://db:27017/mi_base_de_datos
+
+volumes:
+  mongo_data:

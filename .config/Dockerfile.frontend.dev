@@ -16,4 +16,3 @@ ENV VITE_API_URL=$VITE_API_URL
 
 EXPOSE ${PORT_FRONTEND}
 CMD ["npm", "run", "dev"]
-

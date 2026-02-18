@@ -1,5 +1,4 @@
 #!/bin/bash
-#source .env
 
 # --- CONFIGURACIÓN DE COLORES ---
 GREEN='\033[0;32m'
@@ -10,7 +9,9 @@ NC='\033[0m' # No Color
 
 # Cargamos variables de entorno si existe el archivo
 if [ -f .env ]; then
-    export $(grep -v '^#' .env | xargs)
+    set -a            # Activa el export automático de variables
+    source .env
+    set +a            # Desactiva el export automático
 else
     echo -e "${RED}❌ Error: Archivo .env no encontrado.${NC}"
     exit 1
@@ -75,10 +76,15 @@ show_help() {
     echo -e "  --clean-db        Resetea la base de datos (DROP/CREATE)"
     echo -e "  --update          Actualiza submódulos Git"
     echo -e "  --refresh-docker  Reconstruye imágenes desde cero"
+    echo -e "  --logs-frontend   Muestra logs de servicio"
+    echo -e "  --logs-backend    Muestra logs de servicio"
+    echo -e "  --reset-frontend  Reincia servicio"
+    echo -e "  --reset-backend   Reincia servicio"
     echo -e ""
     echo -e "🛑 ${RED}Peligro:${NC}"
     echo -e "  --kill            Detiene y elimina contenedores y volúmenes"
     echo -e "  --hard-reset      Borra TODO (imágenes, volúmenes, carpetas)"
+    echo -e ""
 }
 
 # --- LÓGICA DE ARGUMENTOS ---
@@ -109,6 +115,17 @@ case "$1" in
     --update)
         echo -e "${BLUE}🔄 Actualizando submódulos...${NC}"
         git submodule update --init --recursive --remote
+        exit 0
+        ;;
+    --logs-frontend|--logs-backend)
+      SERVICE=${1#--logs-}
+      docker compose -f $FILE_DEV logs $SERVICE
+      exit 0
+      ;;
+    --reset-backend|--reset-frontend)
+        SERVICE=${1#--reset-} 
+        echo "♻️ Reiniciando $SERVICE..."
+        docker compose -f $FILE_DEV restart $SERVICE
         exit 0
         ;;
     --help|-h)
