@@ -1,18 +1,18 @@
-# Simple Shop 
+# Simple Shop Fullstack (Backend + Frontend + Docker) <br>
 
-Esta es una aplicación **fullstack** que utiliza una arquitectura de microservicios o repositorios separados mediante **Git Submodules**.
+Proyecto fullstack basado en el frontend original `simpleshop-frontend`, adaptado para usar una API propia construida con Spring Boot.
 
-## Estructura del Proyecto
+### Estructura del Proyecto
 
 - **/frontend**: Aplicación cliente (Submódulo).
 - **/backend**: API y lógica de negocio (Submódulo).
 - **/.config**: Dockerfiles y Docker-Compose. 
 - `docker-compose.yml`: Orquestación de contenedores.
-- `setup.sh`: Script de automatización para despliegue rápido.
+- `start.sh`: Script de automatización para despliegue rápido.
 
 ---
 
-## Requisitos Previos
+### Requisitos Previos
 
 Antes de comenzar, asegúrate de tener instalado:
 * [Docker Desktop](https://www.docker.com/products/docker-desktop)
@@ -20,68 +20,66 @@ Antes de comenzar, asegúrate de tener instalado:
 
 ---
 
-## Instalación y Configuración
+### Instalación y Configuración
 
-### 1. Clonar el repositorio
-Como el proyecto utiliza submódulos, debes clonar el repositorio padre e inicializar los hijos:
+__1. Clonar el repositorio__
+Como el proyecto utiliza submódulos, se debe clonar el repositorio padre e inicializar los hijos:
 
 ```bash
-
 git clone --recursive https://github.com/dmydna/tp-simple-shop-docker.git
 cd tu-repositorio-padre
-
-```
-
-
-Si ya clonaste el proyecto sin el comando --recursive, ejecuta:
-
-```bash
 git submodule update --init --recursive
 ```
 
+__2. Uso del Script de Facilitación (start.sh)__
+se incluye un script para automatizar la construcción y el levantamiento de los servicios.
 
-2. Uso del Script de Facilitación (setup.sh)
-Hemos incluido un script para automatizar la construcción y el levantamiento de los servicios.
-
-Dar permisos de ejecución:
-
+Dar permisos de ejecución y ejcutar:
 ```bash
-chmod +x setup.sh
-```
-
-##### Ejecutar el proyecto:
-
-```bash
-./setup.sh
+chmod +x start.sh
+./start.sh
 ```
 
 ---
 
-##  Docker Compose
+###  Uso de Docker
 
-Si prefieres ejecutar los comandos de Docker manualmente:
-
-##### Construir las imágenes:
+para ejecutar los comandos de Docker manualmente usa:
 
 ```bash
-docker-compose build
+# 1. para Construir imagenes
+docker compose build
+# 2. para Levantar servicios
+docker compose up 
 ```
-##### Levantar los servicios:
 
-```bash
-docker-compose up -d
-```
-Los servicios estarán disponibles en:
-- **Frontend**: http://localhost:3000
-- **Backend API**: http://localhost:8080
+
+> Los servicios estarán disponibles en:
+> - **Frontend**: http://localhost:3000
+> - **Backend API**: http://localhost:8080
 
 ---
 
 ### Notas Adicionales
-#### Actualizar Submódulos
-
-Para traer las últimas versiones del frontend y backend:
-
+Para __actualizar submódulos__ y traer las últimas versiones del frontend y backend:
 ```bash
 git submodule update --remote --merge
-``
+```
+---
+
+### Funcionalidades principales
+
+__Backend (Spring Boot):__
+- Autenticación JWT
+- CRUD completo (productos, usuarios, listados)
+- Subida y eliminación de imágenes
+- Paginación en todas las entidades
+- Base de datos PostgreSQL (o H2 en memoria)
+
+__Frontend (React y Bootstrap):__
+- Dashboard con wizard CRUD
+- Login y registro funcionales
+- Búsqueda con filtros
+- Subida y eliminación de imágenes
+- Diseño responsive
+
