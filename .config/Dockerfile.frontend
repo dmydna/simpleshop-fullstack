@@ -1,3 +1,4 @@
+ARG PORT_FRONTEND
 # Usamos Node y descargamos Git
 FROM node:20-alpine
 WORKDIR /app
@@ -8,13 +9,13 @@ COPY package*.json ./
 RUN npm install
 
 # Copiamos el resto del código que clonó el .sh
-COPY . .
+COPY frontend/ .
 
 ARG VITE_API_URL
 ENV VITE_API_URL=$VITE_API_URL
 RUN npm run build
 
-EXPOSE 3000
-CMD ["npm", "start"]
+EXPOSE ${PORT_FRONTEND}
+CMD ["npm", "run", "dev", "--", "--host"]
 
 

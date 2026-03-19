@@ -1,0 +1,36 @@
+{
+"name": "Java & React Fullstack Development",
+    "dockerComposeFile": [
+        "../.config/docker-compose-fullstack.yml" 
+    ], // Ruta a tu compose
+    "service": "backend",               
+    "workspaceFolder": "/app",  // Donde se monta tu código en el contenedor
+
+    // Se levanten TODOS los servicios al abrir VS Code, 
+    "runServices": ["frontend", "backend", "db"], 
+    // Cerrar VS Code se detengan los contenedores
+    "shutdownAction": "stopCompose",
+    "containerEnv": {
+        "JAVA_HOME": "/opt/java/openjdk"
+    },
+    //  Instalar las extensiones DENTRO del contenedor
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "vscjava.vscode-java-pack",
+                "vscjava.vscode-spring-boot-dashboard",
+                "vscjava.vscode-java-dependency",
+                "vscjava.vscode-maven",
+                "dbaeumer.vscode-eslint",
+                "dsznajder.es7-react-js-snippets"
+            ],
+            "settings": {
+                "java.jdt.ls.java.home": "/opt/java/openjdk"
+            }
+        }
+    },
+
+    // Si necesitas que el contenedor no se muera al iniciar
+    "overrideCommand": true
+}
+

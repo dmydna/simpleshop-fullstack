@@ -1,3 +1,4 @@
+# PRODUCCION COMPOSE
 services:
   # BASE DE DATOS
   db:
@@ -6,6 +7,7 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
       - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_ROOT_HOST=%
     ports:
       - "${PORT_DATABASE}:3306"
     volumes:
@@ -14,8 +16,10 @@ services:
   # BACKEND (Spring Boot)
   backend:
     build: 
-       context: ./backend
-       dockerfile: ../dockerfile-backend
+       context: ..
+       dockerfile: .config/Dockerfile.backend.fullstack.dev
+       args:
+         PORT_BACKEND: ${PORT_BACKEND} 
     restart: always
     ports:
       - "${PORT_BACKEND}:8080"
@@ -29,19 +33,28 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - CORS_ORIGINS=${CORS_ALLOWED_ORIGINS}
       - UPLOAD_DIR=/app/uploads
+      - APP_BASE_URL=${APP_BASE_URL}
+      - DB_URL=${DB_URL}
+      - DB_DRIVER=${DB_DRIVER} 
     # Esto asegura que el backend espere a que la DB esté sana
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
     volumes:
-      - ./backend/uploads:/app/uploads
+      - ..:/app:cached
+      - ../backend/uploads:/app/backend/uploads
+      - maven_data:/root/.m2
+      - /app/frontend/node_modules
+    working_dir: /app/backend
 
   # FRONTEND (React)
   frontend:
     build: 
-       context: ./frontend
-       dockerfile: ../dockerfile-frontend
+       context: ..
+       dockerfile: .config/Dockerfile.frontend.fullstack.dev
+       args:
+         PORT_FRONTEND: ${PORT_FRONTEND} 
     ports:
       - "${PORT_FRONTEND}:3000"
     depends_on:
@@ -51,8 +64,11 @@ services:
       - NODE_ENV=${FRONTEND_MODE:-development}
       - VITE_API_URL=http://localhost:${PORT_BACKEND}
     volumes:
-      - ./frontend:/app        
-      - /app/node_modules      
+      - ..:/app:cached        
+      - /app/frontend/node_modules      
+    working_dir: /app/frontend
 
 volumes:
   db_data:
+  maven_data:
+  npm_cache:

@@ -1,0 +1,29 @@
+ARG PORT_BACKEND
+
+# Usamos el JDK completo (no el JRE) porque Maven necesita compilar en caliente
+FROM maven:3.9.6-eclipse-temurin-21
+WORKDIR /app
+
+
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
+
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+
+
+
+# 1. Copiamos solo el pom.xml primero para descargar dependencias y ahorrar tiempo
+COPY backend/pom.xml .
+
+# Descargamos dependencias (esto se cacheará si el pom no cambia)
+RUN mvn dependency:go-offline && \
+    mvn dependency:resolve-plugins
+
+# 2. Copiamos el código fuente
+COPY backend/ .
+
+# 3. Exponemos el puerto de la API y el de Debug (opcional)
+EXPOSE ${PORT_BACKEND}
+EXPOSE 5005
+CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments='-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005'"]

@@ -1,0 +1,18 @@
+ARG PORT_FRONTEND
+# Usamos Node y descargamos Git
+FROM node:20-alpine
+WORKDIR /app
+
+# Copiamos los archivos de dependencias
+COPY package*.json ./
+# Instalamos dependencias y preparamos la app
+RUN npm install
+
+# Copiamos el resto del código que clonó el .sh
+COPY . .
+
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
+
+EXPOSE ${PORT_FRONTEND}
+CMD ["npm", "run", "dev"]
