@@ -1,6 +1,23 @@
 # Simple Shop Fullstack (Backend + Frontend + Docker) <br>
 
-Proyecto fullstack basado en el frontend original `simpleshop-frontend`, adaptado para usar una API propia construida con Spring Boot.
+Es un ecommerce completo. Implementa una api restful con autentificacion mediante JWT (JSON Web Tokens), paginacion desde el servidor, manejo de bases de datos relacionales y persistencia real de usuarios y pedidos.
+
+### Funcionalidades principales
+
+__Backend (Spring Boot):__
+- Autenticación JWT
+- CRUD completo (productos, usuarios, listados)
+- Subida y eliminación de imágenes
+- Paginación en todas las entidades
+- Base de datos PostgreSQL (o H2 en memoria)
+
+__Frontend (React y Bootstrap):__
+- Dashboard con wizard CRUD
+- Login y registro funcionales
+- Búsqueda con filtros
+- Subida y eliminación de imágenes
+- Diseño responsive
+
 
 ### Estructura del Proyecto
 
@@ -67,19 +84,5 @@ git submodule update --remote --merge
 ```
 ---
 
-### Funcionalidades principales
 
-__Backend (Spring Boot):__
-- Autenticación JWT
-- CRUD completo (productos, usuarios, listados)
-- Subida y eliminación de imágenes
-- Paginación en todas las entidades
-- Base de datos PostgreSQL (o H2 en memoria)
-
-__Frontend (React y Bootstrap):__
-- Dashboard con wizard CRUD
-- Login y registro funcionales
-- Búsqueda con filtros
-- Subida y eliminación de imágenes
-- Diseño responsive
 
