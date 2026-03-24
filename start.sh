@@ -7,7 +7,7 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Cargamos variables de entorno si existe el archivo
+# Carga variables de entorno si existe el archivo
 if [ -f .env ]; then
     set -a            # Activa el export automático de variables
     source .env
