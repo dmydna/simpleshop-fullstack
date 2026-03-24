@@ -1,6 +1,6 @@
 # Simple Shop Fullstack (Backend + Frontend + Docker) <br>
 
-Proyecto fullstack basado en el frontend original `simpleshop-frontend`, adaptado para usar una API propia construida con Spring Boot.
+Proyecto e-commerce fullstack con una UI responsiva construida con React + Bootstrap y una API RESTfull construida con Spring Boot + JWT.
 
 ### Estructura del Proyecto
 
@@ -22,50 +22,61 @@ Antes de comenzar, asegúrate de tener instalado:
 
 ### Instalación y Configuración
 
-__1. Clonar el repositorio__
+__1. Clonar el repositorio e inicializarlo__. <br>
 Como el proyecto utiliza submódulos, se debe clonar el repositorio padre e inicializar los hijos:
 
 ```bash
-git clone --recursive https://github.com/dmydna/tp-simple-shop-docker.git
-cd tu-repositorio-padre
+git clone --recursive https://github.com/dmydna/simpleshop-fullstack.git
+cd simpleshop-fullstack
 git submodule update --init --recursive
 ```
 
-__2. Uso del Script de Facilitación (start.sh)__
-se incluye un script para automatizar la construcción y el levantamiento de los servicios.
 
-Dar permisos de ejecución y ejcutar:
+> Nota: para __actualizar submódulos__ <br>
+>  y traer las últimas versiones del frontend y backend usar: <br>
+> `git submodule update --remote --merge`
+
+__2. Uso del Script de start.sh__.<br>
+Se incluye un script para automatizar la construcción y el levantamiento de los servicios.
+
+Dar permisos de ejecución:
 ```bash
 chmod +x start.sh
-./start.sh
 ```
+Modo de uso:
+1. `start.sh`: para correr y levantar proyecto. 
+2. `start.sh --help`: para ver todos los comandos.
 
+__3. Uso de Env.__<br>
+Se incluye un env con variables de entorno para automatizar la configuraciones.
+
+Principales variables:
+1. `COMPOSE_FILE`: indica el docker file en `.config`
+2. `DB_NAME, DB_PASSWORD, DB_ROOT_USER`: nombre, password y usuario de bases de datos.
+3. `APP_ADMIN_USERNAME, APP_ADMIN_PASSWORD`: usuario y password de admin
+ 
 ---
 
 ###  Uso de Docker
-
-para ejecutar los comandos de Docker manualmente usa:
+Para ejecutar los comandos de Docker manualmente usar:
 
 ```bash
-# 1. para Construir imagenes
-docker compose build
-# 2. para Levantar servicios
+
+cd simpleshop-fullstack
+# para levantar e incializar el proyecto (recompila proyecto)
+docker compose up --build
+# para levantar el proyecto
 docker compose up 
 ```
 
 
-> Los servicios estarán disponibles en:
-> - **Frontend**: http://localhost:3000
-> - **Backend API**: http://localhost:8080
+> Los __servicios__ estarán disponibles en:
+> - **Frontend**: `http://localhost:3000`
+> - **Backend API**: `http://localhost:8080`
 
 ---
 
-### Notas Adicionales
-Para __actualizar submódulos__ y traer las últimas versiones del frontend y backend:
-```bash
-git submodule update --remote --merge
-```
----
+
 
 ### Funcionalidades principales
 
@@ -74,12 +85,12 @@ __Backend (Spring Boot):__
 - CRUD completo (productos, usuarios, listados)
 - Subida y eliminación de imágenes
 - Paginación en todas las entidades
-- Base de datos PostgreSQL (o H2 en memoria)
+- Base de datos MySQL (o H2 en memoria)
 
 __Frontend (React y Bootstrap):__
 - Dashboard con wizard CRUD
 - Login y registro funcionales
-- Búsqueda con filtros
+- Búsqueda con filtros avanzados
 - Subida y eliminación de imágenes
 - Diseño responsive
 
