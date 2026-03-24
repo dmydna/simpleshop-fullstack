@@ -36,6 +36,8 @@ git submodule update --init --recursive
 >  y traer las últimas versiones del frontend y backend usar: <br>
 > `git submodule update --remote --merge`
 
+<br>
+
 __2. Uso del Script de start.sh__.<br>
 Se incluye un script para automatizar la construcción y el levantamiento de los servicios.
 
@@ -44,8 +46,10 @@ Dar permisos de ejecución:
 chmod +x start.sh
 ```
 Modo de uso:
-1. `start.sh`: para correr y levantar proyecto. 
-2. `start.sh --help`: para ver todos los comandos.
+1. `./start.sh`: para correr y levantar proyecto. 
+2. `./start.sh --help`: para ver todos los comandos.
+
+<br>
 
 __3. Uso de Env.__<br>
 Se incluye un env con variables de entorno para automatizar la configuraciones.
@@ -87,10 +91,10 @@ __Backend (Spring Boot):__
 - Paginación en todas las entidades
 - Base de datos MySQL (o H2 en memoria)
 
-__Frontend (React y Bootstrap):__
+__Frontend (React + Bootstrap):__
 - Dashboard con wizard CRUD
 - Login y registro funcionales
 - Búsqueda con filtros avanzados
 - Subida y eliminación de imágenes
-- Diseño responsive
+- Diseño responsivo
 
