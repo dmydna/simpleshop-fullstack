@@ -20,6 +20,8 @@ fi
 # Variables de contenedores (Mejorado: usa prefijo de proyecto si existe)
 COMPOSE_PROJECT_NAME=${COMPOSE_PROJECT_NAME:-"techlab"}
 DB_CONTAINER="${COMPOSE_PROJECT_NAME}-db-1"
+BACK_CONTAINER="${COMPOSE_PROJECT_NAME}-backend-1"
+FRONT_CONTAINER="${COMPOSE_PROJECT_NAME}-frontend-1"
 FILE_DEV=".config/docker-compose-dev.yml"
 FILE_PROD="docker-compose.yml"
 
@@ -80,6 +82,8 @@ show_help() {
     echo -e "  --logs-backend    Muestra logs de servicio"
     echo -e "  --reset-frontend  Reincia servicio"
     echo -e "  --reset-backend   Reincia servicio"
+    echo -e "  --bash-frontend   Entra al bash del contenedor frontend"
+    echo -e "  --bash-backend    Entra al bash del contenedor backend"
     echo -e ""
     echo -e "🛑 ${RED}Peligro:${NC}"
     echo -e "  --kill            Detiene y elimina contenedores y volúmenes"
@@ -95,6 +99,16 @@ case "$1" in
         docker exec -it -e MYSQL_PWD="$DB_PASSWORD" "$DB_CONTAINER" mysql -u root -p"$DB_PASSWORD" "$DB_NAME"
         exit 0
         ;;
+    --bash-frontend)
+       echo -e "${BLUE}📂 Accediendo al bash del contenedor...${NC}"
+       docker exec -it ${FRONT_CONTAINER} /bin/bash
+       exit 0
+       ;;
+    --bash-backend)
+       echo -e "${BLUE}📂 Accediendo al bash del contenedor...${NC}"
+       docker exec -it ${BACK_CONTAINER} /bin/bash
+       exit 0
+       ;;
     --clean-db)
         echo -e "${RED}⚠️  Limpiando base de datos $DB_NAME...${NC}"
         docker exec -it -e MYSQL_PWD="$DB_PASSWORD" "$DB_CONTAINER" mysql -u root -e "DROP DATABASE IF EXISTS $DB_NAME; CREATE DATABASE $DB_NAME;"

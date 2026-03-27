@@ -1,6 +1,26 @@
 # Simple Shop Fullstack (Backend + Frontend + Docker) <br>
 
-Proyecto e-commerce fullstack con una UI responsiva construida con React + Bootstrap y una API RESTfull construida con Spring Boot + JWT.
+Proyecto e-commerce fullstack con una UI responsiva construida con React + Bootstrap <br> y una API RESTfull construida con Spring Boot + JWT.
+
+<br>
+
+### Funcionalidades principales
+
+__Backend (Spring Boot):__
+- Autenticación JWT
+- CRUD completo (productos, usuarios, listados)
+- Subida y eliminación de imágenes
+- Paginación en todas las entidades
+- Base de datos MySQL (o H2 en memoria)
+
+__Frontend (React + Bootstrap):__
+- Dashboard con wizard CRUD
+- Login y registro funcionales
+- Búsqueda con filtros avanzados
+- Subida y eliminación de imágenes
+- Diseño responsivo
+
+---
 
 ### Estructura del Proyecto
 
@@ -12,15 +32,16 @@ Proyecto e-commerce fullstack con una UI responsiva construida con React + Boots
 
 ---
 
-### Requisitos Previos
 
+
+### Instalación y Configuración
+
+__Requisitos Previos__.<br>
 Antes de comenzar, asegúrate de tener instalado:
 * [Docker Desktop](https://www.docker.com/products/docker-desktop)
 * [Git](https://git-scm.com/)
 
----
-
-### Instalación y Configuración
+<br>
 
 __1. Clonar el repositorio e inicializarlo__. <br>
 Como el proyecto utiliza submódulos, se debe clonar el repositorio padre e inicializar los hijos:
@@ -73,28 +94,9 @@ docker compose up --build
 docker compose up 
 ```
 
-
 > Los __servicios__ estarán disponibles en:
 > - **Frontend**: `http://localhost:3000`
 > - **Backend API**: `http://localhost:8080`
 
 ---
-
-
-
-### Funcionalidades principales
-
-__Backend (Spring Boot):__
-- Autenticación JWT
-- CRUD completo (productos, usuarios, listados)
-- Subida y eliminación de imágenes
-- Paginación en todas las entidades
-- Base de datos MySQL (o H2 en memoria)
-
-__Frontend (React + Bootstrap):__
-- Dashboard con wizard CRUD
-- Login y registro funcionales
-- Búsqueda con filtros avanzados
-- Subida y eliminación de imágenes
-- Diseño responsivo
 
