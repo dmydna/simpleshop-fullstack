@@ -1,6 +1,6 @@
 [submodule "backend"]
 	path = backend
-	url = https://github.com/dmydna/simpleshop-backend.git
+	url = git@github.com:dmydna/simpleshop-backend.git
 [submodule "frontend"]
 	path = frontend
-	url = https://github.com/dmydna/simpleshop-frontend.git
+	url = git@github.com:dmydna/simpleshop-frontend.git
