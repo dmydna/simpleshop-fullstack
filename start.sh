@@ -64,14 +64,14 @@ pre_check() {
 
 
 MSG_Success() {
-     echo -e "\n${GREEN}======================================="
-     echo -e "🚀 Sistema TechLab en línea"
-     echo -e "=======================================${NC}"
-     echo -e "🌐 Frontend:   ${BLUE}http://localhost:${PORT_FRONTEND}${NC}"
-     echo -e "⚙️  Backend:    ${BLUE}http://localhost:${PORT_BACKEND}${NC}"
-     echo -e "📊 Database:   ${BLUE}Puerto ${PORT_DATABASE}${NC}"
-     echo -e "---------------------------------------"
-     echo -e "💡 Tips: Usa ${YELLOW}./start.sh --logs-backend${NC} para ver logs."
+     echo -e "\n${GREEN}==================================================="
+     echo -e " Simpleshop Full-Stack"
+     echo -e "===================================================${NC}"
+     echo -e " Frontend:                ${BLUE}http://localhost:${PORT_FRONTEND}${NC}"
+     echo -e " Backend:                 ${BLUE}http://localhost:${PORT_BACKEND}${NC}"
+     echo -e " Database:                ${BLUE}Puerto ${PORT_DATABASE}${NC}"
+     echo -e "---------------------------------------------------"
+     echo -e "Tips: Usa ${YELLOW}./start.sh --help${NC} para ver los comandos.\n"
 }
 
 MSG_Error(){
@@ -97,12 +97,15 @@ show_help() {
     echo -e "  --logs-backend          Muestra logs de servicio"
     echo -e "  --logs-live             Muestra todos los logs en vivo"
     echo -e "  --logs                  Muestra todos logs"
-    echo -e "  --reset-frontend        Reincia servicio"
-    echo -e "  --reset-backend         Reincia servicio"
-    echo -e "  --bash-frontend         Entra al bash del contenedor frontend"
-    echo -e "  --bash-backend          Entra al bash del contenedor backend"
+    echo -e "  --info                  Muestra informacion de puertos y servicios"    
+    echo -e "  --restart-frontend      Reincia servicio"
+    echo -e "  --restart-backend       Reincia servicio"
+    echo -e "  --shell-frontend        Entrar a consola shell del contenedor frontend"
+    echo -e "  --shell-backend         Entrar a consola shell del contenedor backend"
     echo -e "  --hot-reload-backend    Fuerza hot-reload de backend"
     echo -e "  --hot-reload-frontend   Fuerza hot-reload de frontend"
+    echo -e "  --open-frontend         Abrir frontend en navegador predeterminado"
+    echo -e "  --open-backend          Abrir backend en navegador predeterminado"    
     echo -e ""
     echo -e "🛑 ${RED}Peligro:${NC}"
     echo -e "  --kill            Detiene y elimina contenedores y volúmenes"
@@ -170,19 +173,33 @@ confirm_action() {
 # --- LÓGICA DE ARGUMENTOS ---
 
 case "$1" in
+    --open-frontend)
+        echo -e "${BLUE}📂 Abriendo frontend en navegador predeterminado...${NC}"
+        xdg-open http://localhost:$PORT_FRONTEND/ >/dev/null 2>&1 &
+        exit 0
+        ;;
+    --open-backend)
+        echo -e "${BLUE}📂 Abriendo backend en navegador predeterminado...${NC}"
+        xdg-open http://localhost:$PORT_BACKEND/ >/dev/null 2>&1 &
+        exit 0
+        ;;
     --db)
         echo -e "${BLUE}📂 Accediendo a la base de datos  ${DB_NAMEs}...${NC}"
         docker exec -it -e MYSQL_PWD="$DB_PASSWORD" "$DB_CONTAINER" mysql -u root -p"$DB_PASSWORD" "$DB_NAME"
         exit 0
         ;;
-    --bash-frontend)
-       echo -e "${BLUE}📂 Accediendo al bash del contenedor...${NC}"
-       docker exec -it ${FRONT_CONTAINER} /bin/bash
+    --shell-frontend)
+       echo -e "${BLUE}📂 Accediendo al shell del contenedor...${NC}"
+       docker exec -it ${FRONT_CONTAINER} /bin/sh
        exit 0
        ;;
-    --bash-backend)
-       echo -e "${BLUE}📂 Accediendo al bash del contenedor...${NC}"
-       docker exec -it ${BACK_CONTAINER} /bin/bash
+    --info)
+       MSG_Success
+       exit 0
+       ;;
+    --shell-backend)
+       echo -e "${BLUE}📂 Accediendo al shell del contenedor...${NC}"
+       docker exec -it ${BACK_CONTAINER} /bin/sh
        exit 0
        ;;
     --hot-reload-backend)
@@ -234,8 +251,8 @@ case "$1" in
       docker compose logs -f
       exit 0
       ;;
-    --reset-backend|--reset-frontend)
-        SERVICE=${1#--reset-} 
+    --restart-backend|--restart-frontend)
+        SERVICE=${1#--restart-} 
         echo "♻️ Reiniciando $SERVICE..."
         docker compose -f $FILE_DEV restart $SERVICE
         exit 0
